@@ -4,22 +4,22 @@
 #include <math.h>
 #include <stdio.h>
 #include <sys/stat.h>
-
+#include <iostream> 
 #include "master_board_sdk/master_board_interface.h"
 #include "master_board_sdk/defines.h"
 
 #define N_SLAVES_CONTROLED 1
-
+using namespace std; 
 int main(int argc, char **argv)
 {
 	int cpt = 0;
 	double dt = 0.001;
 	double t = 0;
-	double kp = 5.;
-	double kd = 0.1;
-	double iq_sat = 4.0;
-	double freq = 0.5;
-	double amplitude = M_PI;
+	double kp = 11.0;
+	double kd = 0.000003;
+	double iq_sat = 7.0;
+	double freq = 0.0;
+	double amplitude = 0*M_PI;
 	double init_pos[N_SLAVES * 2] = {0};
 	int state = 0;
 	nice(-20); //give the process a high priority
@@ -67,15 +67,23 @@ int main(int argc, char **argv)
 				{
 					if (robot_if.motors[i].IsEnabled())
 					{
-						double ref = init_pos[i] + amplitude * sin(2 * M_PI * freq * t);
-						double v_ref = 2. * M_PI * freq * amplitude * cos(2 * M_PI * freq * t);
+						double ref = init_pos[i];// + amplitude * sin(2 * M_PI * freq * t);
+						double v_ref = 0;//2. * M_PI * freq * amplitude * cos(2 * M_PI * freq * t);
 						double p_err = ref - robot_if.motors[i].GetPosition();
 						double v_err = v_ref - robot_if.motors[i].GetVelocity();
-						double cur = kp * p_err + kd * v_err;
+						double cur =  kp * p_err + kd * v_err;
 						if (cur > iq_sat)
+						{
+							std::cout<<cur<<cur<<cur<<"I'm saturated!!!!!!ggfg gfggfg fgfgf fgfgf gfgfgfg fgggfgfg fgfgfgfggf";
 							cur = iq_sat;
+							return 0;
+						}
 						if (cur < -iq_sat)
+						{
 							cur = -iq_sat;
+							std::cout<<cur<<cur<<cur<<"I'm saturated!!!!!!ggfg gfggfg fgfgf fgfgf gfgfgfg fgggfgfg fgfgfgfggf";
+							return 0;
+						}
 						robot_if.motors[i].SetCurrentReference(cur);
 					}
 				}
